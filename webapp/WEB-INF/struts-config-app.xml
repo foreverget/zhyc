@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts-config PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN" "http://struts.apache.org/dtds/struts-config_1_3.dtd">
+<struts-config>
+	<!-- 配置ActionFormBean -->
+	<form-beans>
+		<!-- 公共Form -->
+		<form-bean name="baseActionForm" type="org.g4studio.common.web.BaseActionForm" />
+	</form-beans>
+	<!-- Action映射 -->
+	<action-mappings type="org.g4studio.core.mvc.xstruts.action.ActionMapping">
+	
+		<!-- 产线 -->
+		<action name="baseActionForm" path="/productline" scope="request"
+			parameter="reqCode" type="com.app.prediction.productline.web.ProductLineAction">
+			<forward name="createProductLineView" path="/prediction/productline/createProductLine.jsp" />	
+		</action>
+	
+		<!-- 基础费用 -->
+		<action name="baseActionForm" path="/basecost" scope="request"
+			parameter="reqCode" type="com.app.prediction.basecost.web.BaseCostAction">
+			<forward name="gzView" path="/prediction/basecost/gz.jsp" />
+			<forward name="wxView" path="/prediction/basecost/wx.jsp" />
+			<forward name="jwView" path="/prediction/basecost/jw.jsp" />
+			<forward name="bzView" path="/prediction/basecost/bz.jsp" />
+			<forward name="qtView" path="/prediction/basecost/qt.jsp" />	
+		</action>
+	
+		<!-- 产线报表 -->
+		<action name="baseActionForm" path="/plreport" scope="request"
+			parameter="reqCode" type="com.app.prediction.report.web.PlReportAction">
+			<forward name="createPlReportView" path="/prediction/report/createPlReport.jsp" />
+			<forward name="createPzReportView" path="/prediction/report/createPzReport.jsp" />
+		</action>
+
+	</action-mappings>
+
+</struts-config>

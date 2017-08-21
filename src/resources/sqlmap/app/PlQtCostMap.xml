@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!-- 手工映射SQL语句 -->
+<sqlMap namespace="PlQtCost">
+	<typeAlias alias="dto" type="org.g4studio.core.metatype.impl.BaseDto"/>
+	<typeAlias alias="plQtCostPO" type="com.app.prediction.basecost.entity.PlQtCostPO"/>
+	
+	<!-- 查询列表 -->
+	<select id="findPlQtCostList" parameterClass="map" resultClass="dto">
+		SELECT
+		  id,
+		  prediction_month, 
+		  cost_code, 
+		  cost_desc,
+		  jg_cost,
+		  sx_cost,
+		  zj_cost,
+		  da_cost,
+		  ct_cost,
+		  db_cost,
+		  create_by,
+		  create_dt,
+		  version,
+		  update_by,
+		  update_dt,
+		  is_valid
+		FROM pl_qt_cost 
+		WHERE 1 = 1
+		<dynamic>
+			<isNotEmpty prepend="AND" property="plCode"> 
+				pl_code = #plCode#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="predictionMonth"> 
+				prediction_month = #predictionMonth#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isValid"> 
+				is_valid = #isValid#
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY create_dt
+	</select>
+	
+	<select id="findPlQtCostListCount" parameterClass="map" resultClass="java.lang.Integer">
+		SELECT count(*) as count
+		  FROM pl_qt_cost WHERE 1 = 1
+		<dynamic>
+			<isNotEmpty prepend="AND" property="plCode"> 
+				pl_code = #plCode#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="predictionMonth"> 
+				prediction_month = #predictionMonth#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isValid"> 
+				is_valid = #isValid#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<!-- 插入一条参数表记录 -->
+	<insert id="insert" parameterClass="plQtCostPO">
+		INSERT INTO pl_qt_cost (
+		  id,
+		  prediction_month, 
+		  cost_code, 
+		  cost_desc,
+		  jg_cost,
+		  sx_cost,
+		  zj_cost,
+		  da_cost,
+		  ct_cost,
+		  db_cost,
+		  create_by,
+		  create_dt,
+		  version, 
+		  update_by, 
+		  update_dt, 
+		  is_valid 
+		  ) 
+		VALUES (
+		    #id#,<!-- ID -->
+		    #prediction_month#,  <!-- prediction_month -->
+		    #cost_code#,  <!-- cost_code -->
+		    #cost_desc#,  <!-- cost_desc -->
+		    #jg_cost#,
+		    #sx_cost#,
+		    #zj_cost#,
+		    #da_cost#,
+		    #ct_cost#,
+		    #db_cost#,
+		    #create_by#,  <!-- create_by -->
+		    #create_dt#,  <!-- create_dt -->
+		    #version#,  <!-- version -->
+		    #update_by#,  <!-- update_by -->
+		    #update_dt#,  <!-- update_dt -->
+		    #is_valid# <!-- 是否有效0:否 1:是 -->
+		)
+	</insert>
+	
+	<!-- 按产线预测月份删除  -->
+	<delete id="deleteByPredictionMonth" parameterClass="map" >
+		DELETE FROM pl_qt_cost
+		      WHERE prediction_month = #predictionMonth#
+	</delete>
+	
+</sqlMap>

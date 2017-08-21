@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!-- 手工映射SQL语句 -->
+<sqlMap namespace="PlWxCost">
+	<typeAlias alias="dto" type="org.g4studio.core.metatype.impl.BaseDto"/>
+	<typeAlias alias="plWxCostPO" type="com.app.prediction.basecost.entity.PlWxCostPO"/>
+	
+	<!-- 查询列表 -->
+	<select id="findPlWxCostList" parameterClass="map" resultClass="dto">
+		SELECT
+		  id,
+		  prediction_month, 
+		  pl_code, 
+		  pl_desc,
+		  bj_cost,
+		  rg_cost,
+		  yt_cost,
+		  sum_row_cost,
+		  create_by,
+		  create_dt,
+		  version,
+		  update_by,
+		  update_dt,
+		  is_valid
+		FROM pl_wx_cost 
+		WHERE 1 = 1
+		<dynamic>
+			<isNotEmpty prepend="AND" property="plCode"> 
+				pl_code = #plCode#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="predictionMonth"> 
+				prediction_month = #predictionMonth#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isValid"> 
+				is_valid = #isValid#
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY create_dt
+	</select>
+	
+	<select id="findPlWxCostListCount" parameterClass="map" resultClass="java.lang.Integer">
+		SELECT count(*) as count
+		  FROM pl_wx_cost WHERE 1 = 1
+		<dynamic>
+			<isNotEmpty prepend="AND" property="plCode"> 
+				pl_code = #plCode#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="predictionMonth"> 
+				prediction_month = #predictionMonth#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isValid"> 
+				is_valid = #isValid#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<!-- 插入一条参数表记录 -->
+	<insert id="insert" parameterClass="plWxCostPO">
+		INSERT INTO pl_wx_cost (
+		  id,
+		  prediction_month,
+		  pl_code,
+		  pl_desc,
+		  bj_cost,
+		  rg_cost,
+		  yt_cost,
+		  sum_row_cost,
+		  create_by,
+		  create_dt,
+		  version, 
+		  update_by, 
+		  update_dt, 
+		  is_valid 
+		  ) 
+		VALUES (
+		    #id#,<!-- ID -->
+		    #prediction_month#,  <!-- prediction_month -->
+		    #pl_code#,  <!-- pl_code -->
+		    #pl_desc#,  <!-- pl_desc -->
+		    #bj_cost#,
+		    #rg_cost#,
+		    #yt_cost#,
+		    #sum_row_cost#,
+		    #create_by#,  <!-- create_by -->
+		    #create_dt#,  <!-- create_dt -->
+		    #version#,  <!-- version -->
+		    #update_by#,  <!-- update_by -->
+		    #update_dt#,  <!-- update_dt -->
+		    #is_valid# <!-- 是否有效0:否 1:是 -->
+		)
+	</insert>
+	
+	<!-- 按产线预测月份删除  -->
+	<delete id="deleteByPredictionMonth" parameterClass="map" >
+		DELETE FROM pl_wx_cost
+		      WHERE prediction_month = #predictionMonth#
+	</delete>
+	
+</sqlMap>

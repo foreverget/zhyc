@@ -1,0 +1,201 @@
+<?xml version="1.0"?>
+<!-- 从svn更新源代码，并重新编译、打包、部署 -->
+<project name="auto-deploy" basedir="." default="redeploy">
+
+	<!-- 属性定义(在不同的环境，应该要重新定义合适自己的属性值) -->
+	
+	<!-- 定义存放检出代码的目录 -->	
+	<property name="checkout_dir" value="project1"/>
+	<!-- 指明要检出的代码在svn服务器上的url -->	
+	<property name="project_svn_url" value="https://xxx.com/svn/01 Code/project1/"/>
+	<!-- 指明svn账号 -->	
+	<property name="svn_repository_user" value="user1"/>
+	<!-- 指明svn密码 -->	
+	<property name="svn_repository_passwd" value="123456789"/>
+	<!-- 指明tomcat的目录 -->
+	<property name="tomcat_home" value="F:/company1/apache-tomcat-7.0.47"/>
+	<!-- 指定打包后war文件的名称 -->
+	<property name="war_name" value="project1"/>
+	<!-- 指明svnant任务插件用到的jar文件的路径 -->
+	<property name="svnant_lib" value="lib"/>
+	<!-- 指明编译时需要用到的其他jar文件的路径 -->
+	<property name="other_lib" value="3rd_lib"/>
+
+	<!-- 当前时间及格式 -->
+	<tstamp>
+		<format property="current_time" pattern="yyyyMMddhhmm" locale="zh"/>
+	</tstamp>
+
+	<!-- path to the svnant libraries. Usually they will be located in ANT_HOME/lib -->
+	<path id="svnant_classpath">
+		<fileset dir="${svnant_lib}">
+			<include name="**/*.jar"/>
+		</fileset>
+	</path>  
+	<!-- 项目的classpath路径 -->
+	<path id="project_classpath">
+		<fileset dir="${checkout_dir}/WebRoot/WEB-INF/lib/"> 
+			<include name="*.jar"/>
+		</fileset>
+		<!-- 编译时额外需要javax.servlet.jar和javax.servlet.jsp.jar -->
+		<fileset dir="${other_lib}">
+			<include name="*.jar"/>
+		</fileset>
+	</path> 
+
+	<!-- 引入svn任务 -->
+	<typedef resource="org/tigris/subversion/svnant/svnantlib.xml" classpathref="svnant_classpath" />
+	<!-- 设置svn属性 -->
+	<svnSetting id="svnparams" username="${svn_repository_user}" password="${svn_repository_passwd}" javahl="false"/> 
+
+	<!-- 删除源代码文件夹 -->
+	<target name="clean-src">
+		<echo message="开始删除检出的源码(源码目录：${checkout_dir})，请稍后..." />
+		<delete dir="${checkout_dir}"/>
+		<echo message="源码删除完毕。" />
+	</target>
+
+	<!-- 从SVN服务器checkout源代码 -->
+	<target name="checkout" depends="clean-src">
+		<echo message="开始从svn服务器${project_svn_url}检出代码，请稍后..." /> 
+		<svn refid="svnparams">
+			<checkout url="${project_svn_url}" revision="HEAD" destPath="${checkout_dir}"  force="true"/>
+		</svn>
+		<echo message="从svn服务器${project_svn_url}检出代码完成。" />
+	</target>
+	
+	<!-- 从SVN服务器update源代码 -->
+	<target name="update">
+		<echo message="开始从svn服务器${project_svn_url}更新代码，请稍后..." />
+			<update revision="HEAD" dir="${checkout_dir}" />
+		<echo message="从svn服务器${project_svn_url}更新代码完成。" />
+	</target>
+
+		<!-- 清除旧的编译文件 -->
+	<target name="clean-class">
+	<echo message="开始清空classes文件夹内之前编译生成的旧的类文件，请稍后..." />
+		<delete dir="${checkout_dir}/WebRoot/WEB-INF/classes"/>
+		<mkdir dir="${checkout_dir}/WebRoot/WEB-INF/classes"/>
+		<echo message="classes文件清空完毕。" />
+
+	</target>
+	
+	<!-- 编译源代码 -->
+	<target name="compile" depends="checkout,clean-class">
+		<echo message="开始编译源文件，请稍后..." /> 
+		<javac nowarn="true" destdir="${checkout_dir}/WebRoot/WEB-INF/classes" source="1.5" target="1.5" debug="false"  
+                  deprecation="false" optimize="false" failonerror="true">  
+			<src path="${checkout_dir}/src"/>
+			<classpath refid="project_classpath"/>
+		</javac>  
+	</target> 
+
+	<!-- 复制配置文件 -->
+	<target name="copy-config-files" depends="compile">
+		<copy todir="${checkout_dir}/WebRoot/WEB-INF/classes/conf/">  
+			<fileset dir="${checkout_dir}/src/conf/"/>
+		</copy>
+		<copy todir="${checkout_dir}/WebRoot/WEB-INF/classes/">  
+			<fileset file="${checkout_dir}/src/log4j.properties"/>
+		</copy>  		
+	</target> 
+
+	<!-- 生成war包 -->
+	<target name="generate-war" depends="copy-config-files">
+		<war warfile="./${war_name}.war" webxml="${checkout_dir}/WebRoot/WEB-INF/web.xml" excludes="*.svn">
+			<lib dir="${checkout_dir}/WebRoot/WEB-INF/lib"/>
+			<classes dir = "${checkout_dir}/WebRoot/WEB-INF/classes"/>
+			<fileset dir="${checkout_dir}/WebRoot"/>
+		</war>
+	</target>
+
+	<!-- 启动tomcat -->
+	<target name="start-tomcat">
+		<echo>开始启动tomcat，请稍后....</echo>
+		<exec executable="${tomcat_home}/bin/startup.bat"  failonerror="false" 
+					 vmlauncher="false"  output="${tomcat_home}/logs/log.txt" append="true">
+			<!-- <arg value="/c" /> -->  
+			<env key="CATALINA_HOME" path="${tomcat_home}"/>
+			<arg value="/c startup.bat" />   
+		</exec>
+		<!-- 检测tomcat的URL是否可以访问成功，访问成功则认为tomcat启动完成 -->
+		<waitfor maxwait="10" maxwaitunit="minute"  checkevery="1000">
+			<http url="http://localhost:8080/"/>
+		</waitfor>
+		<echo>启动tomcat完成。</echo>
+	</target>
+
+	<!-- 停止tomcat，生成war文件成功才停止tomcat来部署 -->
+	<target name="stop-tomcat" depends="generate-war">  
+		<echo>开始停止tomcat，请稍后...</echo>  
+		<exec executable="${tomcat_home}/bin/shutdown.bat"  failonerror="false"   
+                    output="${tomcat_home}/logs/log.txt" append="true" >  
+			<!-- <arg value="/c" /> -->     
+			<env key="CATALINA_HOME" path="${tomcat_home}"/>  
+			<arg value="/c shutdown.bat" />     
+		</exec>
+		<!-- 检测tomcat的URL是否访问失败(用not标签)，访问失败则认为tomcat已经停止。 -->
+		<waitfor maxwait="10" maxwaitunit="minute"  checkevery="1000">
+			<not>
+				<http url="http://localhost:8080/"/>
+			</not>
+		</waitfor>
+		<echo>停止tomcat完成。</echo>
+	</target> 
+
+	<!-- 检查是否存在已经部署的旧的目标war包。 -->
+	<target name="old-war-exist-check"> 
+		<echo>检查是否存在旧的同名war文件...</echo>
+		<available file="${tomcat_home}/webapps/${war_name}.war"  property="old-war-isexist"/>
+	</target>
+
+	<!-- 重新部署前，备份原来的war文件。 -->
+	<target name="backup-old-war" depends="old-war-exist-check"  if="old-war-isexist">
+
+		<echo>存在旧的同名war文件，开始备份之前部署的旧的同名war文件...</echo>
+		<copy tofile="./${war_name}_bak${current_time}.war">  
+			<fileset file="${tomcat_home}/webapps/${war_name}.war"/>
+		</copy> 
+		<echo>备份旧的同名war文件完毕。</echo>
+	</target>		
+
+	<!-- 删除原来的war文件 -->
+	<target name="delete-old-war" depends="backup-old-war" if="old-war-isexist">
+		<echo>开始删除旧的同名war文件...</echo>
+		<delete file="${tomcat_home}/webapps/${war_name}.war"/>		 
+		<echo>删除旧的同名war文件完毕。</echo>
+	</target>
+
+
+
+	<!-- 检查是否存在已经部署的目标context文件夹。 -->
+	<target name="old-context-exist-check"> 
+		<echo>检查是否存在旧的同名context文件夹...</echo>
+		<available file="${tomcat_home}/webapps/${war_name}" type="dir"  property="old-context-isexist"/>
+	</target>
+
+	<!-- 删除旧的目标context文件夹 -->
+	<target name="delete-old-context" depends="old-context-exist-check" if="old-context-isexist">
+		<echo>存在旧的同名context文件夹，开始删除旧的同名context文件夹...</echo>
+		<delete dir="${tomcat_home}/webapps/${war_name}"/> 
+		<echo>删除旧的同名context文件夹完毕。</echo>
+	</target>
+
+
+
+	<!-- 把新打包的war文件复制到tomcat的webapps目录下 -->
+	<target name="copy-new-war-into-webapps" depends="delete-old-context,delete-old-war">
+		<echo>开始复制新的war文件到tomcat的webapps目录下，请稍后...</echo>
+		<copy tofile="${tomcat_home}/webapps/${war_name}.war">  
+			<fileset file="./${war_name}.war"/>
+		</copy> 		 
+		<echo>复制新的war文件到tomcat的webapps目录下完毕。</echo>
+	</target>
+	
+	
+	<!-- 部署，主要是执行依赖任务 -->
+	<target name="redeploy" depends="stop-tomcat,copy-new-war-into-webapps,start-tomcat">
+		<echo>部署完毕，请测试是否部署成功。</echo>
+	</target>
+	
+</project>

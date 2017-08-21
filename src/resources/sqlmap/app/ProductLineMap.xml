@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!-- 手工映射SQL语句 -->
+<sqlMap namespace="ProductLine">
+	<typeAlias alias="dto" type="org.g4studio.core.metatype.impl.BaseDto"/>
+	<typeAlias alias="productLinePO" type="com.app.prediction.productline.entity.ProductLinePO"/>
+	
+	<!-- 查询列表 -->
+	<select id="findProductLineList" parameterClass="map" resultClass="dto">
+		SELECT
+		  id, 
+		  pl_prediction_code,
+		  prediction_month, 
+		  pl_code, 
+		  pl_desc, 
+		  pl_amount,
+		  goods_amount,
+		  main_input_cost,
+		  item_input_cost,
+		  zz_input_cost,
+		  sale_cost,
+		  create_by,
+		  create_dt,
+		  version,
+		  update_by,
+		  update_dt,
+		  is_valid
+		FROM product_line 
+		WHERE 1 = 1
+		<dynamic>
+			<isNotEmpty prepend="AND" property="plCode"> 
+				pl_code = #plCode#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="predictionMonth"> 
+				prediction_month = #predictionMonth#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isValid"> 
+				is_valid = #isValid#
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY create_dt
+	</select>
+	
+	<select id="findProductLineListCount" parameterClass="map" resultClass="java.lang.Integer">
+		SELECT count(*) as count
+		  FROM product_line WHERE 1 = 1
+		<dynamic>
+			<isNotEmpty prepend="AND" property="plCode"> 
+				pl_code = #plCode#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="predictionMonth"> 
+				prediction_month = #predictionMonth#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isValid"> 
+				is_valid = #isValid#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<!-- 插入一条参数表记录 -->
+	<insert id="insert" parameterClass="productLinePO">
+		INSERT INTO product_line (
+		  id,
+		  pl_prediction_code,
+		  prediction_month,
+		  pl_code,
+		  pl_desc, 
+		  pl_amount,
+		  goods_amount,
+		  main_input_cost,
+		  item_input_cost,
+		  zz_input_cost,
+		  sale_cost,
+		  create_by,
+		  create_dt,
+		  version, 
+		  update_by, 
+		  update_dt, 
+		  is_valid 
+		  ) 
+		VALUES (
+		    #id#,<!-- ID -->
+		    #pl_prediction_code#,  <!-- 产线预测编号 -->
+		    #prediction_month#,  <!-- prediction_month -->
+		    #pl_code#,  <!-- pl_code -->
+		    #pl_desc#,  <!-- pl_desc -->
+		    #pl_amount#,
+		    #goods_amount#,
+		  	#main_input_cost#,
+		  	#item_input_cost#,
+		  	#zz_input_cost#,
+		  	#sale_cost#,
+		    #create_by#,  <!-- create_by -->
+		    #create_dt#,  <!-- create_dt -->
+		    #version#,  <!-- version -->
+		    #update_by#,  <!-- update_by -->
+		    #update_dt#,  <!-- update_dt -->
+		    #is_valid# <!-- 是否有效0:否 1:是 -->
+		)
+	</insert>
+	
+	<!-- 根据产线预测编号 -->
+	<update id="updatebyPpc" parameterClass="dto">
+	   UPDATE product_line SET 
+	      pl_amount = #plAmount#,
+	      goods_amount=#goodsAmount#,
+	      main_input_cost =#mainInputCost#,
+	      sale_cost = #saleCost#
+	   WHERE pl_prediction_code = #plPredictionCode#
+	</update>
+	
+	<!-- 根据产线预测月份 -->
+	<update id="updateZzInputCostZeroByPm" parameterClass="dto">
+	   UPDATE product_line SET 
+	      zz_input_cost = 0
+	   WHERE prediction_month = #predictionMonth#
+	</update>
+	
+	<update id="update" parameterClass="dto">
+         UPDATE product_line
+		<dynamic prepend="SET"> 
+			<isNotEmpty prepend="," property="plAmount">
+	         pl_amount = #plAmount#
+			</isNotEmpty>
+			<isNotEmpty prepend="," property="goodsAmount">
+	         goods_amount = #goodsAmount#
+			</isNotEmpty>
+			<isNotEmpty prepend="," property="itemInputCost">
+	         item_input_cost = #itemInputCost#
+			</isNotEmpty>
+			<isNotEmpty prepend="," property="zzInputCost">
+	         zz_input_cost = #zzInputCost#
+			</isNotEmpty>
+			<isNotEmpty prepend="," property="mainInputCost">
+	         main_input_cost = #mainInputCost#
+			</isNotEmpty>
+			<isNotEmpty prepend="," property="saleCost">
+	         sale_cost = #saleCost#
+			</isNotEmpty>
+			<isNotEmpty prepend="," property="updateBy">
+	         update_by = #updateBy#
+			</isNotEmpty>
+			<isNotEmpty prepend="," property="updateDt">
+	         update_dt = #updateDt#
+			</isNotEmpty>						
+		</dynamic> 
+	        WHERE pl_prediction_code = #plPredictionCode#    
+	</update>
+</sqlMap>

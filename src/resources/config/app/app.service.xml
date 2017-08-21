@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 业务系统 -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+	
+	<!-- 产线服务 -->
+	<bean id="productLineService" parent="baseTransactionProxyG4">
+		<property name="target">
+			<bean class="com.app.prediction.productline.service.impl.ProductLineServiceImpl">
+				<property name="g4Dao" ref="g4Dao" />
+			</bean>
+		</property>
+	</bean>
+	
+	<!-- 基础费用维护服务 -->
+	<bean id="baseCostService" parent="baseTransactionProxyG4">
+		<property name="target">
+			<bean class="com.app.prediction.basecost.service.impl.BaseCostServiceImpl">
+				<property name="g4Dao" ref="g4Dao" />
+			</bean>
+		</property>
+	</bean>
+	
+	<!-- 产线预测报表服务 -->
+	<bean id="plReportService" parent="baseTransactionProxyG4">
+		<property name="target">
+			<bean class="com.app.prediction.report.service.impl.PlReportServiceImpl">
+				<property name="g4Dao" ref="g4Dao" />
+			</bean>
+		</property>
+	</bean>
+	
+</beans>

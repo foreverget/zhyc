@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!-- 手工映射SQL语句 -->
+<sqlMap namespace="Input">
+	<typeAlias alias="dto" type="org.g4studio.core.metatype.impl.BaseDto"/>
+	<typeAlias alias="inputPO" type="com.app.prediction.productline.entity.InputPO"/>
+	
+	<!-- 查询列表 -->
+	<select id="findInputList" parameterClass="map" resultClass="dto">
+		SELECT
+		  id, 
+		  pl_prediction_code,
+		  prediction_month, 
+		  pl_code, 
+		  input_type_code,
+		  input_type_desc,
+		  mat_code,
+		  mat_desc,
+		  input_use_flag,
+		  amount,
+		  unit,
+		  price,
+		  create_by,
+		  create_dt,
+		  version,
+		  update_by,
+		  update_dt,
+		  is_valid
+		FROM input
+		WHERE 1 = 1
+		<dynamic>
+			<isNotEmpty prepend="AND" property="inputTypeCode"> 
+				input_type_code = #inputTypeCode#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="plPredictionCode"> 
+				pl_prediction_code = #plPredictionCode#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="predictionMonth"> 
+				prediction_month = #predictionMonth#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isValid"> 
+				is_valid = #isValid#
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY input_type_desc,mat_code
+	</select>
+	
+	<select id="findInputListCount" parameterClass="map" resultClass="java.lang.Integer">
+		SELECT count(*) as count
+		  FROM input WHERE 1 = 1
+		<dynamic>
+			<isNotEmpty prepend="AND" property="inputTypeCode"> 
+				input_type_code = #inputTypeCode#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="plPredictionCode"> 
+				pl_prediction_code = #plPredictionCode#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="predictionMonth"> 
+				prediction_month = #predictionMonth#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isValid"> 
+				is_valid = #isValid#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<!-- 插入一条参数表记录 -->
+	<insert id="insert" parameterClass="inputPO">
+		INSERT INTO input(
+		  id, 
+		  pl_prediction_code,
+		  prediction_month, 
+		  pl_code, 
+		  input_type_code,
+		  input_type_desc,
+		  mat_code,
+		  mat_desc,
+		  input_use_flag,
+		  amount,
+		  unit,
+		  price,
+		  create_by,
+		  create_dt,
+		  version,
+		  update_by,
+		  update_dt,
+		  is_valid
+		  ) 
+		VALUES (
+		    #id#,<!-- ID -->
+		    #pl_prediction_code#,  <!-- 产线预测编号 -->
+		    #prediction_month#,  <!-- prediction_month -->
+		    #pl_code#,  <!-- pl_code -->
+			#input_type_code#,
+			#input_type_desc#,
+			#mat_code#,
+			#mat_desc#,
+			#input_use_flag#,
+			#amount#,
+			#unit#,
+			#price#,
+		    #create_by#,  <!-- create_by -->
+		    #create_dt#,  <!-- create_dt -->
+		    #version#,  <!-- version -->
+		    #update_by#,  <!-- update_by -->
+		    #update_dt#,  <!-- update_dt -->
+		    #is_valid# <!-- 是否有效0:否 1:是 -->
+		)
+	</insert>
+	
+	<!-- 按产线预测编号删除  -->
+	<delete id="deleteByPlPredictionCode" parameterClass="map" >
+		DELETE FROM input
+		      WHERE pl_prediction_code = #plPredictionCode#
+	</delete>
+	<delete id="deleteZzCostByParame" parameterClass="dto" >
+		DELETE FROM input
+		      WHERE prediction_month = #predictionMonth# and mat_code = #matCode#
+	</delete>
+	<delete id="deleteAllZzCostButZjByParame" parameterClass="dto" >
+		DELETE FROM input
+		      WHERE prediction_month = #predictionMonth# and input_type_code ='ZZ' and mat_code != #matCode#
+	</delete>
+	
+	
+</sqlMap>

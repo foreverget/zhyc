@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!-- 手工映射SQL语句 -->
+<sqlMap namespace="Product">
+	<typeAlias alias="dto" type="org.g4studio.core.metatype.impl.BaseDto"/>
+	<typeAlias alias="productPO" type="com.app.prediction.productline.entity.ProductPO"/>
+	
+	<!-- 查询列表 -->
+	<select id="findProductList" parameterClass="map" resultClass="dto">
+		SELECT
+		  id, 
+		  pl_prediction_code,
+		  prediction_month, 
+		  pl_code, 
+		  pl_desc,
+		  output_mat_code,
+		  output_mat_desc,
+		  output_amount,
+		  output_unit,
+		  output_sale_price,
+		  output_type_code,
+		  output_type_desc,
+		  feed_mat_code,
+		  feed_mat_desc,
+		  feed_amount,
+		  feed_unit,
+		  feed_sale_price,
+		  create_by,
+		  create_dt,
+		  version,
+		  update_by,
+		  update_dt,
+		  is_valid
+		FROM product
+		WHERE 1 = 1
+		<dynamic>
+			<isNotEmpty prepend="AND" property="plCode"> 
+				pl_code = #plCode#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="plPredictionCode"> 
+				pl_prediction_code = #plPredictionCode#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="predictionMonth"> 
+				prediction_month = #predictionMonth#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isValid"> 
+				is_valid = #isValid#
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY create_dt
+	</select>
+	
+	<select id="findProductListCount" parameterClass="map" resultClass="java.lang.Integer">
+		SELECT count(*) as count
+		  FROM product WHERE 1 = 1
+		<dynamic>
+			<isNotEmpty prepend="AND" property="plCode"> 
+				pl_code = #plCode#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="plPredictionCode"> 
+				pl_prediction_code = #plPredictionCode#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="predictionMonth"> 
+				prediction_month = #predictionMonth#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isValid"> 
+				is_valid = #isValid#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<!-- 插入一条参数表记录 -->
+	<insert id="insert" parameterClass="productPO">
+		INSERT INTO product(
+		  id, 
+		  pl_prediction_code,
+		  prediction_month, 
+		  pl_code, 
+		  pl_desc,
+		  output_mat_code,
+		  output_mat_desc,
+		  output_amount,
+		  output_unit,
+		  output_sale_price,
+		  output_type_code,
+		  output_type_desc,
+		  feed_mat_code,
+		  feed_mat_desc,
+		  feed_amount,
+		  feed_unit,
+		  feed_sale_price,
+		  create_by,
+		  create_dt,
+		  version,
+		  update_by,
+		  update_dt,
+		  is_valid
+		  ) 
+		VALUES (
+		    #id#,<!-- ID -->
+		    #pl_prediction_code#,  <!-- 产线预测编号 -->
+		    #prediction_month#,  <!-- prediction_month -->
+		    #pl_code#,  <!-- pl_code -->
+		    #pl_desc#,  <!-- pl_desc -->
+			#output_mat_code#,
+			#output_mat_desc#,
+			#output_amount#,
+			#output_unit#,
+			#output_sale_price#,
+			#output_type_code#,
+			#output_type_desc#,
+			#feed_mat_code#,
+			#feed_mat_desc#,
+			#feed_amount#,
+			#feed_unit#,
+			#feed_sale_price#,
+		    #create_by#,  <!-- create_by -->
+		    #create_dt#,  <!-- create_dt -->
+		    #version#,  <!-- version -->
+		    #update_by#,  <!-- update_by -->
+		    #update_dt#,  <!-- update_dt -->
+		    #is_valid# <!-- 是否有效0:否 1:是 -->
+		)
+	</insert>
+	
+	<!-- 按产线预测编号删除  -->
+	<delete id="deleteByPlPredictionCode" parameterClass="map" >
+		DELETE FROM product
+		      WHERE pl_prediction_code = #plPredictionCode#
+	</delete>
+	
+	
+</sqlMap>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+<!-- 业务系统的SQL映射文件装载 -->
+<sqlMapConfig>
+	<settings useStatementNamespaces="true" />
+	<sqlMap resource="sqlmap/app/ProductLineConfigMap.xml" />
+	<sqlMap resource="sqlmap/app/ProductLineMap.xml" />
+	<sqlMap resource="sqlmap/app/ProductMap.xml" />
+	<sqlMap resource="sqlmap/app/InputMap.xml" />
+	<sqlMap resource="sqlmap/app/PlGzCostMap.xml" />
+	<sqlMap resource="sqlmap/app/PlWxCostMap.xml" />
+	<sqlMap resource="sqlmap/app/PlJwCostMap.xml" />
+	<sqlMap resource="sqlmap/app/PlBzCostMap.xml" />
+	<sqlMap resource="sqlmap/app/PlQtCostMap.xml" />
+	<sqlMap resource="sqlmap/app/PlReportMap.xml" />
+	<sqlMap resource="sqlmap/app/PzReportMap.xml" />
+</sqlMapConfig>

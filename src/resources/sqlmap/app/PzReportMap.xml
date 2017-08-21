@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!-- 手工映射SQL语句 -->
+<sqlMap namespace="PzReport">
+	<typeAlias alias="dto" type="org.g4studio.core.metatype.impl.BaseDto"/>
+	<typeAlias alias="pzReportPO" type="com.app.prediction.report.entity.PzReportPO"/>
+	
+	<!-- 查询列表 -->
+	<select id="findPzReportList" parameterClass="map" resultClass="dto">
+		SELECT
+		    ID,
+		    pl_prediction_code,
+		    prediction_month,
+		    pl_code,
+		    pl_desc,
+		    mat_code,
+		    mat_desc,
+		    output_amount,
+		    sell_price,
+		    unit_cost,
+		    diff_price,
+		    benefit_1,
+		    benefit_2,
+		    create_by,
+		    create_dt,
+		    version,
+		    update_by,
+		    update_dt,
+		    is_valid
+		FROM pz_report
+		WHERE 1 = 1
+		<dynamic>
+			<isNotEmpty prepend="AND" property="plCode"> 
+				pl_code = #plCode#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="predictionMonth"> 
+				prediction_month = #predictionMonth#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isValid"> 
+				is_valid = #isValid#
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY pl_code
+	</select>
+	
+	<select id="findPzReportListCount" parameterClass="map" resultClass="java.lang.Integer">
+		SELECT count(*) as count
+		  FROM pz_report WHERE 1 = 1
+		<dynamic>
+			<isNotEmpty prepend="AND" property="plCode"> 
+				pl_code = #plCode#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="predictionMonth"> 
+				prediction_month = #predictionMonth#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isValid"> 
+				is_valid = #isValid#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<!-- 插入一条参数表记录 -->
+	<insert id="insert" parameterClass="pzReportPO">
+		INSERT INTO pz_report (
+		    ID,
+		    pl_prediction_code,
+		    prediction_month,
+		    pl_code,
+		    pl_desc,
+		    mat_code,
+		    mat_desc,
+		    output_amount,
+		    sell_price,
+		    unit_cost,
+		    diff_price,
+		    benefit_1,
+		    benefit_2,
+		    create_by,
+		    create_dt,
+		    version,
+		    update_by,
+		    update_dt,
+		    is_valid
+		  ) 
+		VALUES (
+		    #id#,<!-- ID -->
+		    #pl_prediction_code#,  <!-- 产线预测编号 -->
+		    #prediction_month#,  <!-- prediction_month -->
+		    #pl_code#,  <!-- pl_code -->
+		    #pl_desc#,  <!-- pl_desc -->
+		    #mat_code#,
+    	    #mat_desc#,
+            #output_amount#,
+            #sell_price#,
+            #unit_cost#,
+            #diff_price#,
+            #benefit_1#,
+            #benefit_2#,
+		    #create_by#,  <!-- create_by -->
+		    #create_dt#,  <!-- create_dt -->
+		    #version#,  <!-- version -->
+		    #update_by#,  <!-- update_by -->
+		    #update_dt#,  <!-- update_dt -->
+		    #is_valid# <!-- 是否有效0:否 1:是 -->
+		)
+	</insert>
+	<!-- 按产线预测月份删除  -->
+	<delete id="deleteByPredictionMonth" parameterClass="java.lang.String" >
+		DELETE FROM pz_report
+		      WHERE prediction_month = #predictionMonth#
+	</delete>
+	<!--  获取其他投料，计算各投料种类的成本使用-->
+	<select id="getPlInputMatGroupList" parameterClass="map" resultClass="dto">
+		SELECT 
+		    pl.pl_prediction_code,
+		    pl.prediction_month,
+		    pl.pl_code,
+		    pl.pl_desc,
+		    pl.pl_amount,
+		    pl.goods_amount,
+		    i.input_type_code,
+		    i.input_type_desc,
+		    i.input_use_flag,
+		    i.mat_code,
+		    i.mat_desc,
+		    i.amount,
+		    i.price
+		FROM
+		    zhyc.product_line pl,
+		    zhyc.input i
+		WHERE
+		    pl.pl_prediction_code = i.pl_prediction_code
+		        AND pl.prediction_month = i.prediction_month
+		        AND pl.pl_code = i.pl_code
+		        AND pl.pl_prediction_code = #plPredictionCode#	        
+		ORDER BY pl_code , i.input_type_code , i.mat_code
+	</select>
+	<!-- 获得产线物料分组，分品种预测报表基础数据 -->
+	<select id="getPlProductMatGroupList" parameterClass="map" resultClass="dto">
+		SELECT 
+	    t.pl_prediction_code,
+	    t.prediction_month,
+	    t.pl_code,
+	    t.pl_desc,
+	    t.output_mat_code as mat_code,
+	    t.output_mat_desc as mat_desc,
+	    t.output_sale_price as sell_price,
+	    SUM(t.output_amount) AS output_amount,
+	    SUM(t.feed_cost) AS main_feed_cost
+		FROM
+		    (SELECT 
+		        pl.pl_prediction_code,
+		            pl.prediction_month,
+		            pl.pl_code,
+		            pl.pl_desc,
+		            p.output_mat_code,
+		            p.output_mat_desc,
+		            p.output_sale_price,
+		            p.output_type_code,
+		            p.output_type_desc,
+		            p.output_amount,
+		            p.feed_mat_code,
+		            p.feed_mat_desc,
+		            p.feed_amount,
+		            p.feed_sale_price,
+		            p.feed_amount * p.feed_sale_price / p.output_amount AS feed_cost
+		    FROM
+		        product_line pl, product p
+		    WHERE
+		        pl.pl_code = p.pl_code
+		            AND pl.prediction_month = p.prediction_month
+		            AND pl.prediction_month = #predictionMonth#
+		            AND p.output_type_code = 'W') t
+		GROUP BY t.pl_prediction_code , t.prediction_month , t.pl_code , t.pl_desc , t.output_mat_code , t.output_sale_price
+	</select>
+	
+	
+</sqlMap>

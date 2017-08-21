@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!-- 手工映射SQL语句 -->
+<sqlMap namespace="ProductLineConfig">
+	<typeAlias alias="dto" type="org.g4studio.core.metatype.impl.BaseDto"/>
+	
+	<!-- 查询列表 -->
+	<select id="findProductLineConfigList" parameterClass="map" resultClass="dto">
+		SELECT
+		  id,  <!-- id -->
+		  pl_code,  <!-- 产线编码 -->
+		  pl_desc,  <!-- 产线描述 -->
+		  is_prediction,  <!-- 是否预测 0 否 1 是 -->
+		  create_by,  <!-- 创建人 -->
+		  create_dt,  <!-- 创建时间 -->
+		  version,  <!-- 版本号 -->
+		  update_by,  <!-- 更新人 -->
+		  update_dt,  <!-- 更新时间 -->
+		  is_valid  <!-- 是否有效 -->
+		FROM product_line_config 
+		   WHERE 1 = 1
+		<dynamic>
+			<isNotEmpty prepend="AND" property="isValid"> 
+				is_valid = #isValid#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isPrediction"> 
+				is_prediction = #isPrediction#
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY create_dt
+	</select>
+
+</sqlMap>

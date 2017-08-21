@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!-- 手工映射SQL语句 -->
+<sqlMap namespace="PlReport">
+	<typeAlias alias="dto" type="org.g4studio.core.metatype.impl.BaseDto"/>
+	<typeAlias alias="plReportPO" type="com.app.prediction.report.entity.PlReportPO"/>
+	
+	<!-- 查询列表 -->
+	<select id="findPlReportList" parameterClass="map" resultClass="dto">
+		SELECT
+		  id, 
+		  pl_prediction_code,
+		  prediction_month, 
+		  pl_code, 
+		  pl_desc, 
+		  pl_amount,
+		  goods_amount,
+    	  unit_cost,
+          sell_price,
+          diff_price,
+          benefit_1,
+          benefit_2,
+          benefit_3,
+		  create_by,
+		  create_dt,
+		  version,
+		  update_by,
+		  update_dt,
+		  is_valid
+		FROM pl_report
+		WHERE 1 = 1
+		<dynamic>
+			<isNotEmpty prepend="AND" property="plCode"> 
+				pl_code = #plCode#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="predictionMonth"> 
+				prediction_month = #predictionMonth#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isValid"> 
+				is_valid = #isValid#
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY pl_code
+	</select>
+	
+	<select id="findPlReportListCount" parameterClass="map" resultClass="java.lang.Integer">
+		SELECT count(*) as count
+		  FROM pl_report WHERE 1 = 1
+		<dynamic>
+			<isNotEmpty prepend="AND" property="plCode"> 
+				pl_code = #plCode#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="predictionMonth"> 
+				prediction_month = #predictionMonth#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isValid"> 
+				is_valid = #isValid#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<!-- 插入一条参数表记录 -->
+	<insert id="insert" parameterClass="plReportPO">
+		INSERT INTO pl_report (
+		  id,
+		  pl_prediction_code,
+		  prediction_month,
+		  pl_code,
+		  pl_desc, 
+		  pl_amount,
+		  goods_amount,
+    	  unit_cost,
+          sell_price,
+          diff_price,
+          benefit_1,
+          benefit_2,
+          benefit_3,
+		  create_by,
+		  create_dt,
+		  version, 
+		  update_by, 
+		  update_dt, 
+		  is_valid 
+		  ) 
+		VALUES (
+		    #id#,<!-- ID -->
+		    #pl_prediction_code#,  <!-- 产线预测编号 -->
+		    #prediction_month#,  <!-- prediction_month -->
+		    #pl_code#,  <!-- pl_code -->
+		    #pl_desc#,  <!-- pl_desc -->
+		    #pl_amount#,
+		    #goods_amount#,
+    	    #unit_cost#,
+            #sell_price#,
+            #diff_price#,
+            #benefit_1#,
+            #benefit_2#,
+            #benefit_3#,
+		    #create_by#,  <!-- create_by -->
+		    #create_dt#,  <!-- create_dt -->
+		    #version#,  <!-- version -->
+		    #update_by#,  <!-- update_by -->
+		    #update_dt#,  <!-- update_dt -->
+		    #is_valid# <!-- 是否有效0:否 1:是 -->
+		)
+	</insert>
+	<!-- 按产线预测月份删除  -->
+	<delete id="deleteByPredictionMonth" parameterClass="java.lang.String" >
+		DELETE FROM pl_report
+		      WHERE prediction_month = #predictionMonth#
+	</delete>
+</sqlMap>
